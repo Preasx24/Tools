@@ -81,6 +81,19 @@
         footer p {
             margin: 0;
         }
+        #loading-logo {
+            display: none;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            animation: fadeInWave 2s infinite;
+        }
+        @keyframes fadeInWave {
+            0% { opacity: 0; transform: translate(-50%, -50%) scale(0.9); }
+            50% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+            100% { opacity: 0; transform: translate(-50%, -50%) scale(0.9); }
+        }
         img {
             width: 100%;
             max-height: 300px;
@@ -88,37 +101,20 @@
             border-radius: 5px;
             margin-top: 20px;
         }
-        .loading-spinner {
-            display: none;
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            border: 16px solid #f3f3f3;
-            border-top: 16px solid #1db954;
-            border-radius: 50%;
-            width: 80px;
-            height: 80px;
-            animation: spin 2s linear infinite;
-        }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
     </style>
 </head>
 <body>
 
     <div class="header">
         <h1>Image to PDF Converter</h1>
-        <p>Convert your image to a PDF file quickly and easily.</p>
+        <p>Convert your images to a multi-page PDF file quickly and easily.</p>
     </div>
 
     <div class="container">
         <div class="input-section">
-            <h2>Upload Image</h2>
-            <input type="file" id="inputImage" accept="image/*">
-            <p>Choose an image file (PNG, JPG, GIF, BMP, TIFF, SVG).</p>
+            <h2>Upload Images</h2>
+            <input type="file" id="inputImages" accept="image/*" multiple>
+            <p>Choose one or more image files (PNG, JPG, GIF, BMP, TIFF, SVG).</p>
             <label for="grayscale">Convert to Black & White (Grayscale):</label>
             <input type="checkbox" id="grayscale" />
         </div>
@@ -128,8 +124,10 @@
             <button onclick="downloadPDF()">Download PDF</button>
         </div>
 
-        <!-- Loading Spinner -->
-        <div class="loading-spinner" id="spinner"></div>
+    </div>
+
+    <div id="loading-logo">
+        <img src="dtech-logo.png" alt="D-TECH Logo" id="logo">
     </div>
 
     <footer>
@@ -138,77 +136,79 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script>
-        const inputImage = document.getElementById('inputImage');
+        const inputImages = document.getElementById('inputImages');
         const grayscaleCheckbox = document.getElementById('grayscale');
-        const spinner = document.getElementById('spinner');
-        let uploadedImage = null;
+        const loadingLogo = document.getElementById('loading-logo');
+        const logo = document.getElementById('logo');
+        let uploadedImages = [];
 
-        inputImage.addEventListener('change', function(event) {
-            const file = event.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    const img = new Image();
-                    img.src = e.target.result;
-                    img.onload = function() {
-                        uploadedImage = img;
-                        displayImage(img);
+        inputImages.addEventListener('change', function(event) {
+            const files = event.target.files;
+            uploadedImages = [];
+            if (files.length > 0) {
+                for (let i = 0; i < files.length; i++) {
+                    const file = files[i];
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        const img = new Image();
+                        img.src = e.target.result;
+                        img.onload = function() {
+                            uploadedImages.push(img);
+                        };
                     };
-                };
-                reader.readAsDataURL(file);
+                    reader.readAsDataURL(file);
+                }
             }
         });
 
-        function displayImage(img) {
-            // Display the uploaded image on the page (optional)
-            const imgElement = document.createElement('img');
-            imgElement.src = img.src;
-            document.body.appendChild(imgElement);
-        }
-
-        function imageToPDF(img, isGrayscale) {
+        function imageToPDF(images, isGrayscale) {
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
-            const imgWidth = doc.internal.pageSize.width;
-            const imgHeight = (img.height / img.width) * imgWidth; // Scale to fit page width
-
-            // Convert to grayscale if the checkbox is checked
-            if (isGrayscale) {
-                const canvas = document.createElement('canvas');
-                const ctx = canvas.getContext('2d');
-                canvas.width = img.width;
-                canvas.height = img.height;
-                ctx.drawImage(img, 0, 0, img.width, img.height);
-
-                // Convert to grayscale
-                const imageData = ctx.getImageData(0, 0, img.width, img.height);
-                const data = imageData.data;
-                for (let i = 0; i < data.length; i += 4) {
-                    const avg = (data[i] + data[i + 1] + data[i + 2]) / 3;
-                    data[i] = avg;       // Red
-                    data[i + 1] = avg;   // Green
-                    data[i + 2] = avg;   // Blue
+            
+            images.forEach((img, index) => {
+                if (index > 0) {
+                    doc.addPage();
                 }
-                ctx.putImageData(imageData, 0, 0);
-                img.src = canvas.toDataURL(); // Update image to grayscale
-            }
+                const imgWidth = doc.internal.pageSize.width;
+                const imgHeight = (img.height / img.width) * imgWidth; // Scale to fit page width
 
-            // Add the image to the PDF, scaling it to fit the page
-            doc.addImage(img, 'JPEG', 0, 0, imgWidth, imgHeight);
-            window.pdfDoc = doc; // Store the generated PDF for later download
+                if (isGrayscale) {
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+                    canvas.width = img.width;
+                    canvas.height = img.height;
+                    ctx.drawImage(img, 0, 0, img.width, img.height);
+
+                    const imageData = ctx.getImageData(0, 0, img.width, img.height);
+                    const data = imageData.data;
+                    for (let i = 0; i < data.length; i += 4) {
+                        const avg = (data[i] + data[i + 1] + data[i + 2]) / 3;
+                        data[i] = avg;
+                        data[i + 1] = avg;
+                        data[i + 2] = avg;
+                    }
+                    ctx.putImageData(imageData, 0, 0);
+                    img.src = canvas.toDataURL();
+                }
+
+                doc.addImage(img, 'JPEG', 0, 0, imgWidth, imgHeight);
+            });
+
+            return doc;
         }
 
         function downloadPDF() {
-            if (uploadedImage) {
+            if (uploadedImages.length > 0) {
                 const isGrayscale = grayscaleCheckbox.checked;
-                spinner.style.display = 'block'; // Show loading spinner
-                setTimeout(() => { // Simulate delay while generating PDF
-                    imageToPDF(uploadedImage, isGrayscale);
-                    window.pdfDoc.save('converted_image.pdf');
-                    spinner.style.display = 'none'; // Hide loading spinner after download
-                }, 1000); // Simulate a 1-second delay for PDF generation
+                loadingLogo.style.display = 'block'; // Show logo as loading spinner
+
+                setTimeout(() => {
+                    const doc = imageToPDF(uploadedImages, isGrayscale);
+                    doc.save('converted_images.pdf');
+                    loadingLogo.style.display = 'none'; // Hide logo after download
+                }, 1500); // Simulate a 1.5-second delay for PDF generation
             } else {
-                alert('Please upload an image first!');
+                alert('Please upload at least one image!');
             }
         }
     </script>
