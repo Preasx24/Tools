@@ -39,7 +39,7 @@
             max-width: 600px;
             margin: 10px;
         }
-        input[type="file"], input[type="checkbox"] {
+        input[type="file"], input[type="checkbox"], input[type="text"] {
             padding: 10px;
             background-color: #444;
             border: 1px solid #555;
@@ -119,6 +119,25 @@
             <input type="checkbox" id="grayscale" />
         </div>
 
+        <div class="input-section">
+            <h2>Set PDF Options</h2>
+            <label for="pdfName">PDF Name:</label>
+            <input type="text" id="pdfName" placeholder="Enter PDF Name" />
+            <br><br>
+            <label for="pageSize">Page Size:</label>
+            <select id="pageSize">
+                <option value="a4">A4</option>
+                <option value="letter">Letter</option>
+                <option value="legal">Legal</option>
+            </select>
+            <br><br>
+            <label for="orientation">Orientation:</label>
+            <select id="orientation">
+                <option value="portrait">Portrait</option>
+                <option value="landscape">Landscape</option>
+            </select>
+        </div>
+
         <div class="output-section">
             <h2>Converted PDF</h2>
             <button onclick="downloadPDF()">Download PDF</button>
@@ -138,8 +157,10 @@
     <script>
         const inputImages = document.getElementById('inputImages');
         const grayscaleCheckbox = document.getElementById('grayscale');
+        const pdfNameInput = document.getElementById('pdfName');
+        const pageSizeSelect = document.getElementById('pageSize');
+        const orientationSelect = document.getElementById('orientation');
         const loadingLogo = document.getElementById('loading-logo');
-        const logo = document.getElementById('logo');
         let uploadedImages = [];
 
         inputImages.addEventListener('change', function(event) {
@@ -161,10 +182,10 @@
             }
         });
 
-        function imageToPDF(images, isGrayscale) {
+        function imageToPDF(images, isGrayscale, pageSize, orientation) {
             const { jsPDF } = window.jspdf;
-            const doc = new jsPDF();
-            
+            const doc = new jsPDF(orientation, 'mm', pageSize);
+
             images.forEach((img, index) => {
                 if (index > 0) {
                     doc.addPage();
@@ -200,11 +221,15 @@
         function downloadPDF() {
             if (uploadedImages.length > 0) {
                 const isGrayscale = grayscaleCheckbox.checked;
+                const pageSize = pageSizeSelect.value;
+                const orientation = orientationSelect.value;
+                const pdfName = pdfNameInput.value.trim() || 'converted_images';
+
                 loadingLogo.style.display = 'block'; // Show logo as loading spinner
 
                 setTimeout(() => {
-                    const doc = imageToPDF(uploadedImages, isGrayscale);
-                    doc.save('converted_images.pdf');
+                    const doc = imageToPDF(uploadedImages, isGrayscale, pageSize, orientation);
+                    doc.save(`${pdfName}.pdf`);
                     loadingLogo.style.display = 'none'; // Hide logo after download
                 }, 1500); // Simulate a 1.5-second delay for PDF generation
             } else {
