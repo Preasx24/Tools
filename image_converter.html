@@ -176,22 +176,12 @@
                     doc.addPage();
                 }
 
-                const pageWidth = doc.internal.pageSize.width;
-                const pageHeight = doc.internal.pageSize.height;
+                const imgWidth = img.width;
+                const imgHeight = img.height;
 
-                let imgWidth = img.width;
-                let imgHeight = img.height;
-
-                // Scale the image to fit the page
-                const scaleX = pageWidth / imgWidth;
-                const scaleY = pageHeight / imgHeight;
-                const scale = Math.min(scaleX, scaleY); // Fit image to page without distortion
-
-                imgWidth = imgWidth * scale;
-                imgHeight = imgHeight * scale;
-
-                const offsetX = (pageWidth - imgWidth) / 2;
-                const offsetY = (pageHeight - imgHeight) / 2;
+                // Set the PDF dimensions to match the image's dimensions
+                doc.internal.pageSize.width = imgWidth;
+                doc.internal.pageSize.height = imgHeight;
 
                 if (isGrayscale) {
                     const canvas = document.createElement('canvas');
@@ -212,7 +202,8 @@
                     img.src = canvas.toDataURL();
                 }
 
-                doc.addImage(img, 'JPEG', offsetX, offsetY, imgWidth, imgHeight);
+                // Add image to the PDF, ensuring it fills the page
+                doc.addImage(img, 'JPEG', 0, 0, imgWidth, imgHeight);
             });
 
             return doc;
