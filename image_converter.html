@@ -17,6 +17,7 @@
             text-align: center;
             padding: 50px 0;
             background-color: #222222;
+            margin-bottom: 30px;
         }
         h1 {
             font-size: 3em;
@@ -24,17 +25,18 @@
         }
         .container {
             display: flex;
-            justify-content: center;
-            flex-wrap: wrap;
+            flex-direction: column;
+            align-items: center;
             gap: 20px;
             padding: 20px;
+            margin-bottom: 50px;
         }
         .input-section, .output-section {
             background-color: #333;
             padding: 20px;
             border-radius: 5px;
             width: 100%;
-            max-width: 400px;
+            max-width: 600px;
             margin: 10px;
         }
         input[type="file"], input[type="checkbox"] {
@@ -72,9 +74,12 @@
             text-align: center;
             padding: 20px;
             background-color: #222222;
-            position: fixed;
+            position: relative;
             width: 100%;
             bottom: 0;
+        }
+        footer p {
+            margin: 0;
         }
         img {
             width: 100%;
@@ -82,6 +87,23 @@
             object-fit: contain;
             border-radius: 5px;
             margin-top: 20px;
+        }
+        .loading-spinner {
+            display: none;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            border: 16px solid #f3f3f3;
+            border-top: 16px solid #1db954;
+            border-radius: 50%;
+            width: 80px;
+            height: 80px;
+            animation: spin 2s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
     </style>
 </head>
@@ -105,6 +127,9 @@
             <h2>Converted PDF</h2>
             <button onclick="downloadPDF()">Download PDF</button>
         </div>
+
+        <!-- Loading Spinner -->
+        <div class="loading-spinner" id="spinner"></div>
     </div>
 
     <footer>
@@ -115,6 +140,7 @@
     <script>
         const inputImage = document.getElementById('inputImage');
         const grayscaleCheckbox = document.getElementById('grayscale');
+        const spinner = document.getElementById('spinner');
         let uploadedImage = null;
 
         inputImage.addEventListener('change', function(event) {
@@ -175,8 +201,12 @@
         function downloadPDF() {
             if (uploadedImage) {
                 const isGrayscale = grayscaleCheckbox.checked;
-                imageToPDF(uploadedImage, isGrayscale);
-                window.pdfDoc.save('converted_image.pdf');
+                spinner.style.display = 'block'; // Show loading spinner
+                setTimeout(() => { // Simulate delay while generating PDF
+                    imageToPDF(uploadedImage, isGrayscale);
+                    window.pdfDoc.save('converted_image.pdf');
+                    spinner.style.display = 'none'; // Hide loading spinner after download
+                }, 1000); // Simulate a 1-second delay for PDF generation
             } else {
                 alert('Please upload an image first!');
             }
