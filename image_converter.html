@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Image Format Converter - D-TECH Tools</title>
+    <title>Image to PDF - D-TECH Tools</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -44,7 +44,7 @@
             color: white;
             border-radius: 5px;
         }
-        select, button {
+        button {
             padding: 10px;
             background-color: #444;
             border: 1px solid #555;
@@ -88,33 +88,20 @@
 <body>
 
     <div class="header">
-        <h1>Image Format Converter</h1>
-        <p>Convert your images to different formats with ease.</p>
+        <h1>Image to PDF Converter</h1>
+        <p>Convert your image to a PDF file quickly and easily.</p>
     </div>
 
     <div class="container">
         <div class="input-section">
             <h2>Upload Image</h2>
             <input type="file" id="inputImage" accept="image/*">
-            <p>Choose an image file (PNG, JPG, GIF, BMP, WebP, TIFF, SVG).</p>
-
-            <h2>Choose Output Format</h2>
-            <select id="outputFormat">
-                <option value="image/jpeg">JPG</option>
-                <option value="image/png">PNG</option>
-                <option value="image/webp">WebP</option>
-                <option value="image/gif">GIF</option>
-                <option value="image/bmp">BMP</option>
-                <option value="image/tiff">TIFF</option>
-                <option value="image/svg+xml">SVG (Rasterized)</option>
-            </select>
+            <p>Choose an image file (PNG, JPG, GIF, BMP, TIFF, SVG).</p>
         </div>
 
         <div class="output-section">
-            <h2>Converted Image</h2>
-            <canvas id="canvas"></canvas>
-            <br>
-            <button onclick="downloadImage()">Download Converted Image</button>
+            <h2>Converted PDF</h2>
+            <button onclick="downloadPDF()">Download PDF</button>
         </div>
     </div>
 
@@ -122,11 +109,9 @@
         <p>&copy; 2025 D-TECH Tools. All rights reserved.</p>
     </footer>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script>
         const inputImage = document.getElementById('inputImage');
-        const canvas = document.getElementById('canvas');
-        const ctx = canvas.getContext('2d');
-        const outputFormatSelect = document.getElementById('outputFormat');
 
         inputImage.addEventListener('change', function(event) {
             const file = event.target.files[0];
@@ -136,22 +121,32 @@
                     const img = new Image();
                     img.src = e.target.result;
                     img.onload = function() {
-                        canvas.width = img.width;
-                        canvas.height = img.height;
-                        ctx.drawImage(img, 0, 0);
+                        // Store the image to be used later
+                        imageToPDF(img);
                     };
                 };
                 reader.readAsDataURL(file);
             }
         });
 
-        function downloadImage() {
-            const outputFormat = outputFormatSelect.value;
-            const dataUrl = canvas.toDataURL(outputFormat);
-            const link = document.createElement('a');
-            link.href = dataUrl;
-            link.download = 'converted_image.' + outputFormat.split('/')[1];
-            link.click();
+        function imageToPDF(img) {
+            // Create a PDF document
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+
+            // Add the image to the PDF
+            doc.addImage(img, 'JPEG', 10, 10, img.width / 10, img.height / 10);
+
+            // Store the PDF for download later
+            window.pdfDoc = doc;
+        }
+
+        function downloadPDF() {
+            if (window.pdfDoc) {
+                window.pdfDoc.save('converted_image.pdf');
+            } else {
+                alert('Please upload an image first!');
+            }
         }
     </script>
 
