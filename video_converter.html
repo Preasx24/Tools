@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Local Media Player</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            text-align: center;
+            padding: 20px;
+        }
+        h1 {
+            color: #333;
+        }
+        .player {
+            margin-top: 30px;
+        }
+        input[type="file"] {
+            margin-bottom: 20px;
+        }
+        video, audio {
+            width: 80%;
+            max-width: 800px;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Local Media Player</h1>
+
+    <div class="player">
+        <!-- File input to select media files -->
+        <input type="file" id="mediaFile" accept="audio/*,video/*" onchange="loadMedia(event)">
+        
+        <!-- Video and Audio elements -->
+        <video id="videoPlayer" controls style="display:none;">
+            Your browser does not support the video tag.
+        </video>
+        <audio id="audioPlayer" controls style="display:none;">
+            Your browser does not support the audio element.
+        </audio>
+    </div>
+
+    <script>
+        function loadMedia(event) {
+            var file = event.target.files[0];
+            var videoPlayer = document.getElementById("videoPlayer");
+            var audioPlayer = document.getElementById("audioPlayer");
+
+            // Reset players
+            videoPlayer.style.display = "none";
+            audioPlayer.style.display = "none";
+            videoPlayer.src = "";
+            audioPlayer.src = "";
+
+            if (file) {
+                var fileURL = URL.createObjectURL(file);
+
+                if (file.type.startsWith("video")) {
+                    videoPlayer.style.display = "block";
+                    videoPlayer.src = fileURL;
+                } else if (file.type.startsWith("audio")) {
+                    audioPlayer.style.display = "block";
+                    audioPlayer.src = fileURL;
+                } else {
+                    alert("Please select a valid video or audio file.");
+                }
+            }
+        }
+    </script>
+
+</body>
+</html>
