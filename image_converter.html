@@ -176,12 +176,23 @@
                     doc.addPage();
                 }
 
-                const imgWidth = img.width;
-                const imgHeight = img.height;
+                const maxWidth = 210; // A4 width in mm
+                const maxHeight = 297; // A4 height in mm
 
-                // Set the PDF dimensions to match the image's dimensions
-                doc.internal.pageSize.width = imgWidth;
-                doc.internal.pageSize.height = imgHeight;
+                let imgWidth = img.width * 0.264583; // Convert pixels to mm (1px = 0.264583mm)
+                let imgHeight = img.height * 0.264583; // Convert pixels to mm (1px = 0.264583mm)
+
+                // Scale the image to fit the page while maintaining aspect ratio
+                if (imgWidth > maxWidth) {
+                    const scaleFactor = maxWidth / imgWidth;
+                    imgWidth = maxWidth;
+                    imgHeight = imgHeight * scaleFactor;
+                }
+                if (imgHeight > maxHeight) {
+                    const scaleFactor = maxHeight / imgHeight;
+                    imgHeight = maxHeight;
+                    imgWidth = imgWidth * scaleFactor;
+                }
 
                 if (isGrayscale) {
                     const canvas = document.createElement('canvas');
@@ -202,8 +213,8 @@
                     img.src = canvas.toDataURL();
                 }
 
-                // Add image to the PDF, ensuring it fills the page
-                doc.addImage(img, 'JPEG', 0, 0, imgWidth, imgHeight);
+                // Add image to the PDF, ensuring it fits the page
+                doc.addImage(img, 'JPEG', (maxWidth - imgWidth) / 2, (maxHeight - imgHeight) / 2, imgWidth, imgHeight);
             });
 
             return doc;
