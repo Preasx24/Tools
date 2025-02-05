@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Image Format Converter - D-TECH Tools</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #101010;
+            color: white;
+            margin: 0;
+            padding: 0;
+        }
+        .header {
+            text-align: center;
+            padding: 50px 0;
+            background-color: #222222;
+        }
+        h1 {
+            font-size: 3em;
+            color: #1db954;
+        }
+        .container {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 20px;
+            padding: 20px;
+        }
+        .input-section, .output-section {
+            background-color: #333;
+            padding: 20px;
+            border-radius: 5px;
+            width: 100%;
+            max-width: 400px;
+            margin: 10px;
+        }
+        input[type="file"] {
+            padding: 10px;
+            background-color: #444;
+            border: 1px solid #555;
+            color: white;
+            border-radius: 5px;
+        }
+        select, button {
+            padding: 10px;
+            background-color: #444;
+            border: 1px solid #555;
+            color: white;
+            border-radius: 5px;
+            font-size: 1em;
+            width: 100%;
+            margin-top: 10px;
+        }
+        button {
+            background-color: #1db954;
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 5px;
+            font-size: 1.2em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 20px;
+        }
+        button:hover {
+            background-color: #1ed760;
+        }
+        footer {
+            text-align: center;
+            padding: 20px;
+            background-color: #222222;
+            position: fixed;
+            width: 100%;
+            bottom: 0;
+        }
+        img {
+            width: 100%;
+            max-height: 300px;
+            object-fit: contain;
+            border-radius: 5px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>Image Format Converter</h1>
+        <p>Convert your images to different formats with ease.</p>
+    </div>
+
+    <div class="container">
+        <div class="input-section">
+            <h2>Upload Image</h2>
+            <input type="file" id="inputImage" accept="image/*">
+            <p>Choose an image file (PNG, JPG, GIF, BMP, WebP, TIFF, SVG).</p>
+
+            <h2>Choose Output Format</h2>
+            <select id="outputFormat">
+                <option value="image/jpeg">JPG</option>
+                <option value="image/png">PNG</option>
+                <option value="image/webp">WebP</option>
+                <option value="image/gif">GIF</option>
+                <option value="image/bmp">BMP</option>
+                <option value="image/tiff">TIFF</option>
+                <option value="image/svg+xml">SVG (Rasterized)</option>
+            </select>
+        </div>
+
+        <div class="output-section">
+            <h2>Converted Image</h2>
+            <canvas id="canvas"></canvas>
+            <br>
+            <button onclick="downloadImage()">Download Converted Image</button>
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; 2025 D-TECH Tools. All rights reserved.</p>
+    </footer>
+
+    <script>
+        const inputImage = document.getElementById('inputImage');
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const outputFormatSelect = document.getElementById('outputFormat');
+
+        inputImage.addEventListener('change', function(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const img = new Image();
+                    img.src = e.target.result;
+                    img.onload = function() {
+                        canvas.width = img.width;
+                        canvas.height = img.height;
+                        ctx.drawImage(img, 0, 0);
+                    };
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        function downloadImage() {
+            const outputFormat = outputFormatSelect.value;
+            const dataUrl = canvas.toDataURL(outputFormat);
+            const link = document.createElement('a');
+            link.href = dataUrl;
+            link.download = 'converted_image.' + outputFormat.split('/')[1];
+            link.click();
+        }
+    </script>
+
+</body>
+</html>
