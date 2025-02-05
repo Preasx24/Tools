@@ -37,7 +37,7 @@
             max-width: 400px;
             margin: 10px;
         }
-        input[type="file"] {
+        input[type="file"], input[type="checkbox"] {
             padding: 10px;
             background-color: #444;
             border: 1px solid #555;
@@ -97,6 +97,8 @@
             <h2>Upload Image</h2>
             <input type="file" id="inputImage" accept="image/*">
             <p>Choose an image file (PNG, JPG, GIF, BMP, TIFF, SVG).</p>
+            <label for="grayscale">Convert to Black & White (Grayscale):</label>
+            <input type="checkbox" id="grayscale" />
         </div>
 
         <div class="output-section">
@@ -112,6 +114,8 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script>
         const inputImage = document.getElementById('inputImage');
+        const grayscaleCheckbox = document.getElementById('grayscale');
+        let uploadedImage = null;
 
         inputImage.addEventListener('change', function(event) {
             const file = event.target.files[0];
@@ -121,28 +125,57 @@
                     const img = new Image();
                     img.src = e.target.result;
                     img.onload = function() {
-                        // Store the image to be used later
-                        imageToPDF(img);
+                        uploadedImage = img;
+                        displayImage(img);
                     };
                 };
                 reader.readAsDataURL(file);
             }
         });
 
-        function imageToPDF(img) {
-            // Create a PDF document
+        function displayImage(img) {
+            // Display the uploaded image on the page (optional)
+            const imgElement = document.createElement('img');
+            imgElement.src = img.src;
+            document.body.appendChild(imgElement);
+        }
+
+        function imageToPDF(img, isGrayscale) {
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
+            const imgWidth = doc.internal.pageSize.width;
+            const imgHeight = (img.height / img.width) * imgWidth; // Scale to fit page width
 
-            // Add the image to the PDF
-            doc.addImage(img, 'JPEG', 10, 10, img.width / 10, img.height / 10);
+            // Convert to grayscale if the checkbox is checked
+            if (isGrayscale) {
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                canvas.width = img.width;
+                canvas.height = img.height;
+                ctx.drawImage(img, 0, 0, img.width, img.height);
 
-            // Store the PDF for download later
-            window.pdfDoc = doc;
+                // Convert to grayscale
+                const imageData = ctx.getImageData(0, 0, img.width, img.height);
+                const data = imageData.data;
+                for (let i = 0; i < data.length; i += 4) {
+                    const avg = (data[i] + data[i + 1] + data[i + 2]) / 3;
+                    data[i] = avg;       // Red
+                    data[i + 1] = avg;   // Green
+                    data[i + 2] = avg;   // Blue
+                }
+                ctx.putImageData(imageData, 0, 0);
+                img.src = canvas.toDataURL(); // Update image to grayscale
+            }
+
+            // Add the image to the PDF, scaling it to fit the page
+            doc.addImage(img, 'JPEG', 0, 0, imgWidth, imgHeight);
+            window.pdfDoc = doc; // Store the generated PDF for later download
         }
 
         function downloadPDF() {
-            if (window.pdfDoc) {
+            if (uploadedImage) {
+                const isGrayscale = grayscaleCheckbox.checked;
+                imageToPDF(uploadedImage, isGrayscale);
                 window.pdfDoc.save('converted_image.pdf');
             } else {
                 alert('Please upload an image first!');
