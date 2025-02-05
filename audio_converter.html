@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Video to Audio Converter - D-TECH Tools</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #101010;
+            color: white;
+            margin: 0;
+            padding: 0;
+        }
+        .header {
+            text-align: center;
+            padding: 50px 0;
+            background-color: #222222;
+            margin-bottom: 30px;
+        }
+        h1 {
+            font-size: 3em;
+            color: #1db954;
+        }
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+            padding: 20px;
+            margin-bottom: 50px;
+        }
+        .input-section, .output-section {
+            background-color: #333;
+            padding: 20px;
+            border-radius: 5px;
+            width: 100%;
+            max-width: 600px;
+            margin: 10px;
+        }
+        input[type="file"], input[type="text"] {
+            padding: 10px;
+            background-color: #444;
+            border: 1px solid #555;
+            color: white;
+            border-radius: 5px;
+        }
+        button {
+            padding: 10px;
+            background-color: #444;
+            border: 1px solid #555;
+            color: white;
+            border-radius: 5px;
+            font-size: 1em;
+            width: 100%;
+            margin-top: 10px;
+        }
+        button {
+            background-color: #1db954;
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 5px;
+            font-size: 1.2em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 20px;
+        }
+        button:hover {
+            background-color: #1ed760;
+        }
+        footer {
+            text-align: center;
+            padding: 20px;
+            background-color: #222222;
+            position: relative;
+            width: 100%;
+            bottom: 0;
+        }
+        footer p {
+            margin: 0;
+        }
+        #loading-logo {
+            display: none;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            animation: fadeInWave 2s infinite;
+        }
+        @keyframes fadeInWave {
+            0% { opacity: 0; transform: translate(-50%, -50%) scale(0.9); }
+            50% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+            100% { opacity: 0; transform: translate(-50%, -50%) scale(0.9); }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>Video to Audio Converter</h1>
+        <p>Convert your video files (MP4, AVI) to audio (MP3) effortlessly.</p>
+    </div>
+
+    <div class="container">
+        <div class="input-section">
+            <h2>Upload Video File</h2>
+            <input type="file" id="inputVideo" accept=".mp4, .avi, .mkv, .mov" />
+            <p>Choose a video file to convert into audio.</p>
+        </div>
+
+        <div class="input-section">
+            <h2>Set Audio Options</h2>
+            <label for="audioName">Audio File Name:</label>
+            <input type="text" id="audioName" placeholder="Enter Audio Name" />
+        </div>
+
+        <div class="output-section">
+            <h2>Converted Audio</h2>
+            <button onclick="convertVideoToAudio()">Download Audio</button>
+        </div>
+    </div>
+
+    <div id="loading-logo">
+        <img src="dtech-logo.png" alt="D-TECH Logo" id="logo">
+    </div>
+
+    <footer>
+        <p>&copy; 2025 D-TECH Tools. All rights reserved.</p>
+    </footer>
+
+    <script>
+        const inputVideo = document.getElementById('inputVideo');
+        const audioNameInput = document.getElementById('audioName');
+        const loadingLogo = document.getElementById('loading-logo');
+        let uploadedVideo = null;
+
+        inputVideo.addEventListener('change', function(event) {
+            const file = event.target.files[0];
+            if (file) {
+                uploadedVideo = file;
+            }
+        });
+
+        function convertVideoToAudio() {
+            if (uploadedVideo) {
+                const audioName = audioNameInput.value.trim() || 'converted_audio';
+                
+                loadingLogo.style.display = 'block'; // Show loading logo
+
+                setTimeout(() => {
+                    // Here you would use an actual backend to process the video and convert it to MP3.
+                    // For the frontend part, we simulate the conversion.
+
+                    const audioBlob = new Blob([uploadedVideo], { type: 'audio/mp3' });
+                    const audioUrl = URL.createObjectURL(audioBlob);
+                    const link = document.createElement('a');
+                    link.href = audioUrl;
+                    link.download = `${audioName}.mp3`;
+                    link.click();
+
+                    loadingLogo.style.display = 'none'; // Hide loading logo after download
+                }, 1500); // Simulate a 1.5-second delay for conversion
+            } else {
+                alert('Please upload a video file!');
+            }
+        }
+    </script>
+
+</body>
+</html>
